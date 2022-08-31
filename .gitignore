@@ -83,3 +83,6 @@ dev/src/dev/nocommit/
 *.code-workspace
 
 .calva/
+metabase*.tar
+history.txt
+nohup.out

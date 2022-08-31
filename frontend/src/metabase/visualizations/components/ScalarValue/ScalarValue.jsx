@@ -20,6 +20,7 @@ export const ScalarWrapper = ({ children }) => (
 
 const ScalarValue = ({
   value,
+  displayColor,
   isDashboard,
   gridSize,
   minGridSize,
@@ -36,7 +37,9 @@ const ScalarValue = ({
     height={height}
     totalNumGridCols={totalNumGridCols}
   >
+    <div style={{color:displayColor}}>
     {value}
+    </div>
   </ScalarValueWrapper>
 );
 

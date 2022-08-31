@@ -9,7 +9,7 @@ import { TYPE } from "metabase/lib/types";
 
 import { fieldSetting } from "metabase/visualizations/lib/settings/utils";
 import { columnSettings } from "metabase/visualizations/lib/settings/column";
-
+import BigQueryConditions from "metabase/components/BigQueryConditions";
 import cx from "classnames";
 import _ from "underscore";
 
@@ -151,6 +151,13 @@ export default class Scalar extends Component {
       // title: t`Multiply by a number`,
       // widget: "number",
     },
+    "scalar.color": {
+      title: t`Conditions`,
+      widget: BigQueryConditions,
+      props: {},
+      default: null,
+      getHidden: (series, vizSettings) => vizSettings["map.type"] !== "region",
+    },
     click_behavior: {},
   };
 
@@ -181,7 +188,7 @@ export default class Scalar extends Component {
       gridSize,
       totalNumGridCols,
     } = this.props;
-
+    const { "scalar.color": color } = settings;
     const columnIndex = this._getColumnIndex(cols, settings);
     const value = rows[0] && rows[0][columnIndex];
     const column = cols[columnIndex];
@@ -191,13 +198,11 @@ export default class Scalar extends Component {
       ...settings.column(column),
       jsx: true,
     };
-
     const fullScalarValue = formatValue(value, formatOptions);
     const compactScalarValue = formatValue(value, {
       ...formatOptions,
       compact: true,
     });
-
     // use the compact version of formatting if the component is narrower than
     // the cutoff and the formatted value is longer than the cutoff
     // also if the width is less than a certain multiplier of the number of digits
@@ -215,7 +220,56 @@ export default class Scalar extends Component {
       settings,
     };
     const isClickable = visualizationIsClickable(clicked);
+    let displayColor = "";
 
+    if (color && color.rules) {
+      const g = color.rules.filter(
+        g => !!g.condition && !!g.value && !!g.color,
+      );
+      g.forEach(a => {
+        let temp, temp2;
+        switch (a.condition) {
+          case "Is Equal to":
+            temp = a.value == value;
+            break;
+          case "Is Less than":
+            temp = a.value > value;
+            break;
+          case "Is Greater than":
+            temp = a.value < value;
+            break;
+          case "Is Less than Equal to":
+            temp = a.value >= value;
+            break;
+          case "Is Greater than Equal to":
+            temp = a.value <= value;
+            break;
+          default:
+            break;
+        }
+        switch (a.condition2) {
+          case "Is Less than":
+            temp2 = a.value2 > value;
+            break;
+          case "Is Greater than":
+            temp2 = a.value2 < value;
+            break;
+          case "Is Less than Equal to":
+            temp2 = a.value2 >= values;
+            break;
+          case "Is Greater than Equal to":
+            temp2 = a.value2 <= value;
+            break;
+          default:
+            break;
+        }
+        if (!a.value2) {
+          temp2 = true;
+        }
+        displayColor = temp && temp2 ? a.color : displayColor;
+      });
+      console.log(displayColor, value);
+    }
     return (
       <ScalarWrapper>
         <div className="Card-title absolute top right p1 px2">
@@ -246,6 +300,7 @@ export default class Scalar extends Component {
               height={height}
               value={displayValue}
               totalNumGridCols={totalNumGridCols}
+              displayColor={displayColor}
             />
           </span>
         </Ellipsified>

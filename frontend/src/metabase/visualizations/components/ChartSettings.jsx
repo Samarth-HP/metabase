@@ -166,9 +166,16 @@ class ChartSettings extends Component {
     const { currentWidget } = this.state;
 
     const settings = this._getSettings();
+    
     const widgets = this._getWidgets();
     const rawSeries = this._getRawSeries();
-
+    
+    widgets.forEach(item => {
+      if(item.id === "scalar.color"){
+        item.hidden = false;
+      }
+    })
+    
     const widgetsById = {};
     const sections = {};
 

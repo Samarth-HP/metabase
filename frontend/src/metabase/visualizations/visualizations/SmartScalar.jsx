@@ -26,6 +26,8 @@ import {
   Variation,
 } from "./SmartScalar.styled";
 
+import BigQueryConditions from "metabase/components/BigQueryConditions";
+
 export default class Smart extends React.Component {
   static uiName = t`Trend`;
   static identifier = "smartscalar";
@@ -57,6 +59,13 @@ export default class Smart extends React.Component {
       title: t`Switch positive / negative colors?`,
       widget: "toggle",
     },
+    "scalar.color": {
+      title: t`Conditions`,
+      widget: BigQueryConditions,
+      props: {},
+      default: null,
+      getHidden: (series, vizSettings) => vizSettings["map.type"] !== "region",
+    },
     click_behavior: {},
   };
 
@@ -79,7 +88,6 @@ export default class Smart extends React.Component {
       );
     }
   }
-
   render() {
     const {
       actionButtons,
@@ -101,6 +109,8 @@ export default class Smart extends React.Component {
       totalNumGridCols,
     } = this.props;
 
+    const { "scalar.color": SetColor } = settings;
+
     const metricIndex = cols.findIndex(col => !isDate(col));
     const dimensionIndex = cols.findIndex(col => isDate(col));
 
@@ -108,6 +118,56 @@ export default class Smart extends React.Component {
     const value = lastRow && lastRow[metricIndex];
     const column = cols[metricIndex];
 
+    let displayColor = "";
+
+    if (SetColor && SetColor.rules) {
+      const g = SetColor.rules.filter(
+        g => !!g.condition && !!g.value && !!g.color,
+      );
+      g.forEach(a => {
+        let temp, temp2;
+        switch (a.condition) {
+          case "Is Equal to":
+            temp = a.value == value;
+            break;
+          case "Is Less than":
+            temp = a.value > value;
+            break;
+          case "Is Greater than":
+            temp = a.value < value;
+            break;
+          case "Is Less than Equal to":
+            temp = a.value >= value;
+            break;
+          case "Is Greater than Equal to":
+            temp = a.value <= value;
+            break;
+          default:
+            break;
+        }
+        switch (a.condition2) {
+          case "Is Less than":
+            temp2 = a.value2 > value;
+            break;
+          case "Is Greater than":
+            temp2 = a.value2 < value;
+            break;
+          case "Is Less than Equal to":
+            temp2 = a.value2 >= values;
+            break;
+          case "Is Greater than Equal to":
+            temp2 = a.value2 <= value;
+            break;
+          default:
+            break;
+        }
+        if (!a.value2) {
+          temp2 = true;
+        }
+        displayColor = temp && temp2 ? a.color : displayColor;
+      });
+      console.log(displayColor, value);
+    }
     const insights =
       rawSeries && rawSeries[0].data && rawSeries[0].data.insights;
     const insight = _.findWhere(insights, { col: column.name });
@@ -173,6 +233,7 @@ export default class Smart extends React.Component {
           ref={scalar => (this._scalar = scalar)}
         >
           <ScalarValue
+            displayColor = {displayColor}
             isDashboard={isDashboard}
             gridSize={gridSize}
             minGridSize={Smart.minSize}

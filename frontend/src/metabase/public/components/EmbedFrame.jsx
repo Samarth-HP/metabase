@@ -44,7 +44,7 @@ class EmbedFrame extends Component {
     } = this.props;
     const { innerScroll } = this.state;
 
-    const { bordered, titled, theme, hide_parameters, hide_download_button } = {
+    const { bordered, titled,downloadable, theme, hide_parameters, hide_download_button } = {
       ...DEFAULT_OPTIONS,
       ...parseHashOptions(location.hash),
     };
@@ -54,6 +54,11 @@ class EmbedFrame extends Component {
 
     const name = titled ? this.props.name : null;
 
+    console.log(this.props.name, titled, {
+      ...DEFAULT_OPTIONS,
+      ...parseHashOptions(location.hash),
+    })
+    console.log('this.props.name, name')
     return (
       <div
         className={cx("EmbedFrame flex flex-column", className, {
@@ -67,7 +72,7 @@ class EmbedFrame extends Component {
             "scroll-y": innerScroll,
           })}
         >
-          {name || parameters?.length > 0 ? (
+          {name || parameters?.length > 0 || downloadable? (
             <div className="EmbedFrame-header flex p1 sm-p2 lg-p3">
               {name && display !== "scalar" && display !== "smartscalar" && (
                 <TitleAndDescription

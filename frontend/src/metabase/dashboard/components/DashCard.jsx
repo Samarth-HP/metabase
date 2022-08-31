@@ -236,7 +236,7 @@ export default class DashCard extends Component {
           isSlow={isSlow}
           expectedDuration={expectedDuration}
           rawSeries={series}
-          showTitle
+          showTitle={true}
           isFullscreen={isFullscreen}
           isDashboard
           dispatch={this.props.dispatch}

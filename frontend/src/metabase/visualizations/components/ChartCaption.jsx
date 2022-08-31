@@ -35,6 +35,7 @@ const ChartCaption = ({
   if (!title) {
     return null;
   }
+    // Hardcoded to remove the title
 
   return (
     <ChartCaptionRoot
